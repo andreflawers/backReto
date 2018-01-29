@@ -27,6 +27,6 @@ server.post('/pago',(req,res,next)=>{
 
 
 
-server.listen(3003, function() {
+server.listen(process.env.port||process.env.PORT ||3003, function() {
   console.log('%s listening at %s', server.name, server.url);
 });
