@@ -1,8 +1,10 @@
 var restify = require('restify');
 var plugins = restify.plugins;
 var businessCode = require('./dummyBusiness/randomGenerator');
-var pago = require('./businessLogic/pago');
 
+var db = require('./businessLogic/database');
+var pago = require('./businessLogic/pago');
+var tarjeta = require('./businessLogic/tarjeta');
 
 function respond(req, res, next) {
   res.send('hello ');  
@@ -12,18 +14,46 @@ function respond(req, res, next) {
 
 var server = restify.createServer();
 server.use(plugins.jsonBodyParser({mapParams:true}));
-server.get('/hello/:name', respond);
-server.head('/hello/:name', respond);
+server.use(plugins.queryParser({ mapParams: true }));
+
+// tipo
+// codigo
+// empresa
+server.get('/pago',(req,res,next)=>{
+  var codigoUser= req.query.codigoUser
+  var codigoSuministro =req.query.codigoSuministro  
+ console.log("codigoSuministro :" +codigoSuministro);
+  pago.getDeuda(codigoUser,codigoSuministro).then(result=>{
+    res.send(200,result);
+  });
+  
+});
+
+
 
 server.post('/pago',(req,res,next)=>{
-    console.log(req.body.cantidad);
-    pago.realizarPago().then(()=>{
-      res.send(businessCode.generateDoneCode());
+    var tarjeta= {
+      numero : req.body.numero,
+      cvv: req.body.cvv
+    }
+    console.log(tarjeta.numero);
+    pago.realizarPago(tarjeta,req.body.monto,req.body.tipoDeuda).then(codigo=>{
+      res.send(200,codigo);
     }).catch(err=>{
       console.error(err);
     });
     
 });
+
+server.get('/conectado',(req,res,next)=>{
+  db.connect(function(err){
+    if(err){
+    console.error('error' +err);
+    }
+    console.log('id : ' +db.threadId);
+    res.send(200);
+  });  
+})
 
 
 
