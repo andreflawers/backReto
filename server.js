@@ -5,7 +5,7 @@ var pago = require('./businessLogic/pago');
 
 
 function respond(req, res, next) {
-  res.send('hello ' + usuario.nombre);  
+  res.send('hello ');  
   next();
 }
 
